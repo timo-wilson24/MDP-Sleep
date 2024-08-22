@@ -1,8 +1,7 @@
 # MDP-Sleep
 This is the repository for my 2024 HSC DT Materials Major Work. The project is designed to help people with sleep insomnia to get to sleep. The practical device is a monkey with two hugging arm actuators and a breathing motion. 
 
-_This comforting and innovative robotic sleep device comes packaged in a cuddly soft toy exterior, providing multiple state-of-the-art robotic functions to help young people with sleep problems ease into a restful sleep. _
-
+This comforting and innovative robotic sleep device comes packaged in a cuddly soft toy exterior, providing multiple state-of-the-art robotic functions to help young people with sleep problems ease into a restful sleep.
 
 **Deisgn Situation**
 In light of the growing epidemic of insomnia and its severe health impacts, this product assists through instilling reassurance in the user by hugging them and matching their breathing with physical, comforting feedback. This replicates the soothing effect of a parent sleeping beside a child. Engineered from the ground up, the device features custom-designed soft robotic components, sensors, a fluffy, plush textile exterior and complex programming. 
