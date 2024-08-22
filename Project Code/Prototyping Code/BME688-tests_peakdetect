@@ -1,0 +1,194 @@
+/***************************************************************************
+  This is a library for the BME680 gas, humidity, temperature & pressure sensor
+
+  Designed specifically to work with the Adafruit BME680 Breakout
+  ----> http://www.adafruit.com/products/3660
+
+  These sensors use I2C or SPI to communicate, 2 or 4 pins are required
+  to interface.
+
+  Written by Limor Fried & Kevin Townsend for Adafruit Industries.
+  BSD license, all text above must be included in any redistribution
+ ***************************************************************************/
+//Add relevant libraries
+#include <Wire.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include "Adafruit_BME680.h"
+#include <PeakDetection.h>
+#include <movingAvg.h>
+
+// state all variables before use (so that bugs etc. are minimised)
+int peakTVOC;
+double dataCO2;
+double dataTVOC;
+double filteredTVOC;
+int peakDetectLag = 18;  //change this to alter the amount of readings that the peak detection function looks at. Max value before crashing code is
+unsigned long time_now = 0;
+unsigned long reading = 0;
+unsigned long timeOfLast;
+unsigned long timeBetweenBreaths;
+unsigned long timeOfLastIn;
+unsigned long timeBetweenBreathsIn;
+int start = 0;
+unsigned long currentTime;
+int previousPeakTVOC = 0;
+unsigned long movingBreathAvg;
+int movingAvgDataPoints = 2;
+int peakDetectEpsilon = 2;
+int peakReadingNo = 0;
+movingAvg avgtimeBetweenBreaths(movingAvgDataPoints);  // use 10 data points for the moving average
+
+#define SEALEVELPRESSURE_HPA (1013.25)
+
+// Declarations for libaries as to what functions, devices are being used
+Adafruit_BME680 bme;  // I2C
+PeakDetection peakDetection;
+
+void setup() {         // this code is run once at the beginning of the device being turned on
+  Serial.begin(9600);  // Serial output (for logs, information to be sent to computer)
+
+  while (!Serial)
+    ;            // Wait while serial loads
+  if (!start) {  // if start has occured, print the start prompt
+    Serial.println("..........................");
+    Serial.println("BME688 test started");
+    Serial.println("..........................");
+    start++;
+  }
+
+  if (!bme.begin()) {
+    Serial.println(F("Could not find a valid BME688 sensor, check wiring!"));
+    while (1)
+      ;  //terminate code if sensor is not wired correctly/recognised
+  }
+
+  peakDetection.begin(peakDetectLag, 1.6, .5);  // sets the lag, threshold and influence for Peak Detection algorithm
+  avgtimeBetweenBreaths.begin();                // Moving average function declared
+
+  // Print settings so that I know what values are being used/changed
+  Serial.println("Settings for this test are:");
+  Serial.print("-  Peak Detection Lag Amount: ");
+  Serial.println(peakDetectLag);
+  Serial.print("-  Peak dection algorithm size of epsilon: ");
+  Serial.println(peakDetectEpsilon);
+  Serial.print("-  Samples relevant for moving avg of breathing rate: ");
+  Serial.println(movingAvgDataPoints);
+  // Set up oversampling and filter initialization
+  bme.setHumidityOversampling(BME680_OS_2X);
+  bme.setGasHeater(320, 150);                   // 320*C for 150 ms
+  peakDetection.setEpsilon(peakDetectEpsilon);  // Custom variable I designed changing PeakDetect library. Epsilon -> the absolute integer amount of deviation that becomes the threshold for when a peak could be detected. Means that small deviations/noise in sensor over a long period where there is a very low Std don't get recorded as breaths.
+  timeOfLast = millis();                        // Set start time to be recorded as the 'time of last breath'.
+}
+
+void loop() {
+  // Tell BME688 to begin measurement.
+  unsigned long endTime = bme.beginReading();
+  if (endTime == 0) {
+    Serial.println(F("Failed to begin reading :("));
+    return;
+  }
+
+  // Obtain measurement results from BME686. Note that this operation isn't instantaneous even if milli() >= endTime due to I2C latency.
+  if (!bme.endReading()) {
+    Serial.println(F("Failed to complete reading :("));
+    delay(2000);
+    return;
+  } else {
+    dataTVOC = (double)bme.gas_resistance / 1000;  //data variable is set to resistance in KOhms
+    peakDetection.add(dataTVOC);                   // Add the data variable to peak detection variable
+    reading++;                                     //add to count of readings so far
+
+    if (reading > peakDetectLag) {         // Don't record peaks if the 'lag' data points in the peak detection algo. has not been filled yet. Otherwise peaks could be recorded off little reasoning, throwing off sensor
+      peakTVOC = peakDetection.getPeak();  // update variable holding Peak information
+      currentTime = millis();              // update current time
+      filteredTVOC = peakDetection.getFilt();
+      PrintAll();  // custom function to print all variables
+      BreathsPM();
+      BreathingMotion(movingBreathAvg);
+      // Put all general code relating to the sensor here!
+
+    } else if (reading == 1) {  //wait for the lag time before doing anything useful (as in the first period the lag has not been filled out)
+      Serial.println("Lag time before reading results");
+    } else if (reading < peakDetectLag - 4) {  //makes dots in serial so you can tell lag time is being filled
+      Serial.print(".");
+    } else if (reading < peakDetectLag - 3) {
+      Serial.println(".");
+    }
+  }
+  // delay(50); // is delay necessary? Does the sensor get overloaded?
+}
+
+void BreathsPM() {                                                                //function to output breathsPM
+  if (peakTVOC == -1 && previousPeakTVOC != -1) {                                 // Edge detection - 'catches falling edge' (so that if still in peak, if statement below runs once)
+    timeBetweenBreaths = currentTime - timeOfLast;                                // Calculate elapsed time before last breath
+    timeOfLast = currentTime;                                                     // update time of last breath variable
+    if (timeBetweenBreaths / 1000 < 11 && timeBetweenBreaths / 1000 > 2) {        // only measures the average of time between breaths that are less than 11 seconds and less than 2 seconds
+      movingBreathAvg = avgtimeBetweenBreaths.reading(timeBetweenBreaths / 100);  // Make the moving average input be the elapsed time in tenths of a second
+      Serial.print("Avg time between breaths: ");
+      Serial.print(movingBreathAvg / 10.0);
+      Serial.print("s, Time between last reading: ");
+      Serial.print(timeBetweenBreaths / 1000.0);
+      Serial.println("s");
+      peakReadingNo++;
+    } else if (timeBetweenBreaths / 1000 > 11) {
+      Serial.print("Time between breaths too long, time was: ");
+      Serial.print(timeBetweenBreaths / 1000.0);
+      Serial.println("s");
+    } else if (timeBetweenBreaths / 1000 < 2) {
+      Serial.print("Time between breaths too short, time was: ");
+      Serial.print(timeBetweenBreaths / 1000.0);
+      Serial.println("s");
+    }
+  } else if (peakTVOC == 1 && previousPeakTVOC != 1) {
+    timeBetweenBreathsIn = currentTime - timeOfLastIn;  // Calculate elapsed time before last breath
+    timeOfLastIn = currentTime;
+    if (timeBetweenBreathsIn / 1000 < 9 && timeBetweenBreathsIn / 1000 > 2) {       // only measures the average of time between breaths that are less than 11 seconds and less than 2 seconds
+      movingBreathAvg = avgtimeBetweenBreaths.reading(timeBetweenBreathsIn / 100);  // Make the moving average input be the elapsed time in tenths of a second
+      Serial.print("Avg time between breaths: ");
+      Serial.print(movingBreathAvg / 10.0);
+      Serial.print("s, Time between last reading: ");
+      Serial.print(timeBetweenBreathsIn / 1000.0);
+      Serial.println("s");
+      peakReadingNo++;
+    } else if (timeBetweenBreathsIn / 1000 > 11) {
+      Serial.print("Time between breaths in too long, time was: ");
+      Serial.print(timeBetweenBreathsIn / 1000.0);
+      Serial.println("s");
+    } else if (timeBetweenBreathsIn / 1000 < 2) {
+      Serial.print("Time between breaths in too short, time was: ");
+      Serial.print(timeBetweenBreathsIn / 1000.0);
+      Serial.println("s");
+    }
+  }
+  previousPeakTVOC = peakTVOC;  // update previous peak value
+}
+/*
+Plan:
+PURPOSE: I want this function to create a running average (of about the last 20 seconds) of how many breaths per minute the user is breathing
+Questions:
+- How to store values to create an average?
+- How to measure the elapsed time efficiently?
+- How to continuously update average - moving average lib?
+- How to ignore values above and below a certain threshold
+*/
+
+void BreathingMotion(int breathingMotorSpeed) {
+}
+
+void PrintAll() {
+  Serial.print("Max:");  // scale for y axis of serial plotter
+  Serial.print("220");
+  Serial.print(", ");
+  Serial.print("PeakTVOC:");
+  Serial.print(peakTVOC * 100);
+  Serial.print(", ");
+  // Serial.print("filteredTVOC:"); //moving average filter
+  // Serial.print(filteredTVOC);
+  // Serial.print(",");
+  Serial.print("Gas:");
+  Serial.print(dataTVOC);
+  Serial.print(", ");
+  Serial.print("Breath Rate:");
+  Serial.println(movingBreathAvg / 10.0);
+}
