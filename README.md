@@ -9,3 +9,9 @@ In light of the growing epidemic of insomnia and its severe health impacts, this
 ### **Design Brief**
 Design and create a prototype product which helps people older than 8 years old get to sleep faster by reducing stress levels. The device will need to function quietly and unobtrusively so that the user is not disturbed, but also make a meaningful impact on an individual’s sleep so that the target market is assisted and compelled to use the product.
 
+## Project Links:
+- [Project Video](https://youtu.be/KvshZNp5xNA)
+- HSC Design and Technology Project Portfolio
+[The following will be published after the competition releases prizewinners.]
+- Young Scientist Project Portfolio
+- AUSSEF Project Portfolio
