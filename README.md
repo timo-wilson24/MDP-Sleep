@@ -14,5 +14,6 @@ Design and create a prototype product which helps people older than 8 years old 
 - [HSC Design and Technology Project Portfolio](Research,%20Project%20Documentation/Tim%20W%20-%20Cuddle%20and%20Comfort%20HSC%20DT%20Portfolio.pdf)
 - [Young Scientist Project Portfolio](Research,%20Project%20Documentation/YS-2024%20Submission%20Cuddle%20and%20Comfort.pdf)
 [Young Scientist Project Logbook](Research,%20Project%20Documentation/Logbook%20of%20Project%20CuddleandComfort%20(YS).pdf)
+
 [The following will be published after the competition releases prizewinners.]
 - AUSSEF Project Portfolio
