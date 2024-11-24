@@ -17,3 +17,8 @@ Design and create a prototype product which helps people older than 8 years old 
 
 [The following will be published after the competition releases prizewinners.]
 - AUSSEF Project Portfolio
+
+## Project Recognition
+- Nomination for SHAPE (showcase of outstanding HSC Design and Technology projects) 
+- 3rd in Technological Innovation category at the STANSW Young Scientist Awards
+- Grand Award (1st) as the STANSW Young Scientist of the Year
