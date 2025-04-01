@@ -230,7 +230,7 @@ void BM_Motor(double targetBMPeriod) {
     motorDutyCycle_previous = motorDutyCycle;
   }
   if (abs(currentTime - timeOfLastBM) >= targetBMPeriod * 1000 + 400) {
-    motorDutyCycle += 50;m
+    motorDutyCycle += 50;
     Serial.println("Motor is stalling, adding torque");
   }
 
