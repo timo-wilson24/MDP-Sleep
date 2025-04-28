@@ -14,6 +14,7 @@ Design and create a prototype product which helps people older than 8 years old 
 - [HSC Design and Technology Project Portfolio](Research,%20Project%20Documentation/Tim%20W%20-%20Cuddle%20and%20Comfort%20HSC%20DT%20Portfolio.pdf)
 - [Young Scientist Project Portfolio](Research,%20Project%20Documentation/YS-2024%20Submission%20Cuddle%20and%20Comfort.pdf)
 [Young Scientist Project Logbook](Research,%20Project%20Documentation/Logbook%20of%20Project%20CuddleandComfort%20(YS).pdf)
+- [NESA SHAPE Learning Lab Video](https://www.youtube.com/watch?v=qtSUQbwAj6s)
 
 [The following will be published after the competition releases prizewinners.]
 - AUSSEF Project Portfolio
@@ -22,3 +23,6 @@ Design and create a prototype product which helps people older than 8 years old 
 - Nomination and selection for SHAPE (showcase of outstanding HSC Design and Technology projects) 
 - 3rd in Technological Innovation category at the STANSW Young Scientist Awards
 - Grand Award (1st) as the STANSW Young Scientist of the Year
+- Ranked first in the AUSSEF competition
+- Project presented in NESA's 'Learning Lab' on the SHAPE website
+- Voted best project presentation at AUSSEF's face-to-face meeting (winning an Espresso display)
